@@ -10,6 +10,7 @@ Serveur à lancer avant le client
 #define TAILLE_MAX_NOM 256
 
 #include <unistd.h>
+#include <pthread.h>
 #include "structure.h"
 
 typedef struct sockaddr sockaddr;
@@ -31,7 +32,7 @@ static void *task_receptionCoordonnees(void *data_sock)
         int longueur;
        
         if ((longueur = read(*sock, buffer, sizeof(buffer))) <= 0) 
-            return;
+            return NULL;
 
         horiz = atoi(&buffer[0]);
         vert = atoi(&buffer[2]);
@@ -53,14 +54,14 @@ static void *task_receptionGrille(void *data_sock)
 
         int longueur;      
         if ((longueur = read(*sock, buffer, sizeof(buffer))) <= 0) 
-            return;
+            return NULL;
           
         remplirGrilleByString(&g,buffer);
     }
     return NULL;
 }
                                   
-main(int argc, char **argv) 
+int main(int argc, char **argv) 
 {
 
 
@@ -69,12 +70,12 @@ main(int argc, char **argv)
     ------------------------------------------------------------------------------------------------*/
   
     int 		socket_descriptor, 		/* descripteur de socket */
-			nouv_socket_descriptor, 	/* [nouveau] descripteur de socket */
-			longueur_adresse_courante; 	/* longueur d'adresse courante d'un client */
+			nouv_socket_descriptor;	/* [nouveau] descripteur de socket */
+	socklen_t		longueur_adresse_courante; 	/* longueur d'adresse courante d'un client */
     sockaddr_in 	adresse_locale, 		/* structure d'adresse locale*/
 			adresse_client_courant; 	/* adresse client courant */
     hostent*		ptr_hote; 			/* les infos recuperees sur la machine hote */
-    servent*		ptr_service; 			/* les infos recuperees sur le service de la machine */
+    //servent*		ptr_service; 			/* les infos recuperees sur le service de la machine */
     char 		machine[TAILLE_MAX_NOM+1]; 	/* nom de la machine locale */
     
     gethostname(machine,TAILLE_MAX_NOM);		/* recuperation du nom de la machine */

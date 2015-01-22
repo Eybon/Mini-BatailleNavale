@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -pthread
+CFLAGS=-Wall 
 LDFLAGS=
 executable = client server 
 
@@ -9,7 +9,7 @@ client: client.c structure.c structure.h
 	$(CC) $(CFLAGS) client.c structure.c -o client
 
 server: server.c structure.c structure.h
-	$(CC) $(CFLAGS) server.c structure.c -o server
+	$(CC) $(CFLAGS) server.c structure.c -o server -lpthread
 
 
 

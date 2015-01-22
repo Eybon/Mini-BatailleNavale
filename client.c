@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
     int 	socket_descriptor;	/* descripteur de socket */
     sockaddr_in adresse_locale; 	/* adresse de socket local */
     hostent *	ptr_host; 		/* info sur une machine hote */
-    servent *	ptr_service; 		/* info sur service */
+    //servent *	ptr_service; 		/* info sur service */
     char *	prog; 			/* nom du programme */
     char *	host; 			/* nom de la machine distante */
      
