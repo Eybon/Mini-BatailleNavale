@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 #define TAILLE 10
 
 typedef enum Etat Etat;
@@ -27,8 +28,16 @@ struct Grille
 
 
 Grille initGrille();
-Etat inspecterPosition(Grille *g, int longueur, int largeur);
-void modifierPosition(Grille *g, int longeur, int largeur, Etat e);
-int attaquerPosition(Grille *g, int longueur, int largeur);
-int placerNavire(Grille *g,int longueurAvant,int largeurAvant, int tailleNavire, Axe axe);
+char* initTableauChar();
+char** initMatriceChar();
+void remplirGrilleByString(Grille *g,char string[]);
+void remplirGrilleByMatrice(Grille *g,char** matrice);
+Etat inspecterPosition(Grille *g, int verticale, int horizontale);
+void modifierPosition(Grille *g, int verticale, int horizontale, Etat e);
+int attaquerPosition(Grille *g, int verticale, int horizontale);
+int placerNavire(Grille *g,int verticaleAvant,int horizontaleAvant, int tailleNavire, Axe axe);
 void afficherGrille(Grille g);
+
+char** setGrilleToMatrice(Grille g);
+char* setGrilleToTableau(Grille g);
+void affich(char** mat);

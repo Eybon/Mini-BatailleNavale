@@ -1,21 +1,17 @@
 CC=gcc
-CFLAGS=-Wall
+CFLAGS=-Wall -pthread
 LDFLAGS=
-executable = client server grille
+executable = client server 
 
 all: $(executable)
 
-client: client.c
-	$(CC) $(CFLAGS) client.c -o client
+client: client.c structure.c structure.h
+	$(CC) $(CFLAGS) client.c structure.c -o client
 
-server: server.c
-	$(CC) $(CFLAGS) server.c -o server
+server: server.c structure.c structure.h
+	$(CC) $(CFLAGS) server.c structure.c -o server
 
-grille: structure.o
-	$(CC) $(CFLAGS) -o grille structure.o
 
-structure.o: structure.c structure.h
-	$(CC) $(CFLAGS) -c structure.c 	
 
 .PHONY: clean 
 

@@ -1,19 +1,37 @@
 #include "structure.h"
 
-int main(int argc, char *argv[])
+/*int main(int argc, char *argv[])
 {
 	Grille g = initGrille();
-	printf("vide : %d\n",(int)g.matrice[3][3]);
 	modifierPosition(&g,3,3,OCCUPE);
 	modifierPosition(&g,9,9,OCCUPE);
-	printf("occupé : %d\n",(int)g.matrice[3][3]);
-	afficherGrille(g);
+	//afficherGrille(g);
 	attaquerPosition(&g,3,3);
 	attaquerPosition(&g,5,3);
 	placerNavire(&g,1,1,9,VERTICALE);
 	placerNavire(&g,1,2,3,HORIZONTALE);	
-	afficherGrille(g);	
+	afficherGrille(g);
+	char** mat = setGrille(g);
+	printf("ok\n");
+	affich(mat);	
 	return 0;
+}*/
+
+char** initMatriceChar()
+{
+	char **matrice = (char**)malloc(sizeof(char*) * TAILLE);
+	int i;
+	for(i = 0; i <TAILLE; i++)
+	{
+	    matrice[i] = (char*)malloc(sizeof(char) * TAILLE);
+	}
+	return matrice;
+}
+
+char* initTableauChar()
+{
+	char *matrice = (char*)malloc(sizeof(char) * TAILLE);
+	return matrice;
 }
 
 Grille initGrille()
@@ -30,31 +48,130 @@ Grille initGrille()
 	return g;
 }
 
-Etat inspecterPosition(Grille *g, int longueur, int largeur)
+void remplirGrilleByString(Grille *g,char string[])
 {
-	return g->matrice[longueur][largeur];
+	int i;
+	for(i=0;i<TAILLE;i++)
+	{
+		int j;
+		for(j=0;j<TAILLE;j++)
+		{
+			if(string[i*10+j]==' ')
+				modifierPosition(g,i,j,VIDE);
+			if(string[i*10+j]=='+')
+				modifierPosition(g,i,j,RATE);
+			if(string[i*10+j]=='O')
+				modifierPosition(g,i,j,OCCUPE);
+			if(string[i*10+j]=='X')
+				modifierPosition(g,i,j,TOUCHE);			
+		}
+	}
 }
 
-void modifierPosition(Grille *g, int longueur, int largeur, Etat e)
+void remplirGrilleByMatrice(Grille *g,char** matrice)
 {
-	g->matrice[longueur][largeur] = e;
+	int i;
+	for(i=0;i<TAILLE;i++)
+	{
+		int j;
+		for(j=0;j<TAILLE;j++)
+		{
+			if(matrice[i][j]==' ')
+				modifierPosition(g,i,j,VIDE);
+			if(matrice[i][j]=='+')
+				modifierPosition(g,i,j,RATE);
+			if(matrice[i][j]=='O')
+				modifierPosition(g,i,j,OCCUPE);
+			if(matrice[i][j]=='X')
+				modifierPosition(g,i,j,TOUCHE);			
+		}
+	}
+}
+
+char* setGrilleToTableau(Grille g)
+{
+	char *matrice = initTableauChar();
+	int i;
+	for(i=0;i<TAILLE;i++)
+	{
+		int j;
+		for(j=0;j<TAILLE;j++)
+		{
+			if(g.matrice[i][j]==VIDE)
+				matrice[i*10+j]=' ';
+			if(g.matrice[i][j]==RATE)
+				matrice[i*10+j]='+';
+			if(g.matrice[i][j]==OCCUPE)
+				matrice[i*10+j]='O';
+			if(g.matrice[i][j]==TOUCHE)
+				matrice[i*10+j]='X';
+		}
+	}
+	return matrice;
+}
+
+char** setGrilleToMatrice(Grille g)
+{
+	char **matrice = initMatriceChar();
+	int i;
+	for(i=0;i<TAILLE;i++)
+	{
+		int j;
+		for(j=0;j<TAILLE;j++)
+		{
+			if(g.matrice[i][j]==VIDE)
+				matrice[i][j]=' ';
+			if(g.matrice[i][j]==RATE)
+				matrice[i][j]='+';
+			if(g.matrice[i][j]==OCCUPE)
+				matrice[i][j]='O';
+			if(g.matrice[i][j]==TOUCHE)
+				matrice[i][j]='X';
+		}
+	}
+	return matrice;
+} 
+
+void affich(char** mat)
+{
+	int i;
+	for(i=0;i<TAILLE;i++)
+	{
+		int j;
+		for(j=0;j<TAILLE;j++)
+		{
+			char c = mat[i][j];
+			printf("  %c ",c);
+		}
+		printf("\n");
+	}
+}
+
+Etat inspecterPosition(Grille *g, int vertical, int horizontale)
+{
+	return g->matrice[vertical][horizontale];
+}
+
+void modifierPosition(Grille *g, int vertical, int horizontale, Etat e)
+{
+	g->matrice[vertical][horizontale] = e;
 }
 
 /*
 *Retourne 0 si la case ciblé est vide, 1 si la case est occupé, -1 pour les erreurs autres cas
 */
-int attaquerPosition(Grille *g, int longueur, int largeur)
+int attaquerPosition(Grille *g, int vertical, int horizontale)
 {
-	if(g->matrice[longueur][largeur] == VIDE)
+	if(g->matrice[vertical][horizontale] == VIDE)
 	{
-		g->matrice[longueur][largeur] = RATE;
+		g->matrice[vertical][horizontale] = RATE;
 		return 0;
 	}	
 	else
 	{
-		if(g->matrice[longueur][largeur] == OCCUPE)
+		if(g->matrice[vertical][horizontale] == OCCUPE)
 		{
-			g->matrice[longueur][largeur] = TOUCHE;
+			g->matrice[vertical][horizontale] = TOUCHE;
 			return 1;
 		}
 	}
@@ -64,18 +181,18 @@ int attaquerPosition(Grille *g, int longueur, int largeur)
 /*
 *Retourne 1 si le le placement du navire est ok, -1 sinon
 */
-int placerNavire(Grille *g,int longueurAvant,int largeurAvant, int tailleNavire, Axe axe)
+int placerNavire(Grille *g,int verticalAvant,int horizontaleAvant, int tailleNavire, Axe axe)
 {
 	//placement d'un navire horizontal
 	if(axe == HORIZONTALE)
 	{
-		if((0<longueurAvant)&&(longueurAvant<TAILLE)&&(0<largeurAvant)&&(largeurAvant<TAILLE)&&(largeurAvant+tailleNavire-1<TAILLE))
+		if((0<verticalAvant)&&(verticalAvant<TAILLE)&&(0<horizontaleAvant)&&(horizontaleAvant<TAILLE)&&(horizontaleAvant+tailleNavire-1<TAILLE))
 		{
 			int i;
 			//on verifie que les cases sont disponibles
 			for(i=0;i<tailleNavire;i++)
 			{
-				if(inspecterPosition(g,longueurAvant,largeurAvant)==OCCUPE)
+				if(inspecterPosition(g,verticalAvant,horizontaleAvant)==OCCUPE)
 				{
 					return -1;
 				}
@@ -83,7 +200,7 @@ int placerNavire(Grille *g,int longueurAvant,int largeurAvant, int tailleNavire,
 			//on place les navires			
 			for(i=0;i<tailleNavire;i++)
 			{
-				modifierPosition(g,longueurAvant,largeurAvant+i,OCCUPE);
+				modifierPosition(g,verticalAvant,horizontaleAvant+i,OCCUPE);
 			}
 			return 1;
 		}
@@ -91,13 +208,13 @@ int placerNavire(Grille *g,int longueurAvant,int largeurAvant, int tailleNavire,
 	//placement d'un navire vertical
 	if(axe == VERTICALE)
 	{
-		if((0<longueurAvant)&&(longueurAvant<TAILLE)&&(0<largeurAvant)&&(largeurAvant<TAILLE)&&(longueurAvant+tailleNavire-1<TAILLE))
+		if((0<verticalAvant)&&(verticalAvant<TAILLE)&&(0<horizontaleAvant)&&(horizontaleAvant<TAILLE)&&(verticalAvant+tailleNavire-1<TAILLE))
 		{
 			int i;
 			//on verifie que les cases sont disponibles
 			for(i=0;i<tailleNavire;i++)
 			{
-				if(inspecterPosition(g,longueurAvant,largeurAvant)==OCCUPE)
+				if(inspecterPosition(g,verticalAvant,horizontaleAvant)==OCCUPE)
 				{
 					return -1;
 				}
@@ -105,7 +222,7 @@ int placerNavire(Grille *g,int longueurAvant,int largeurAvant, int tailleNavire,
 			//on place les navires		
 			for(i=0;i<tailleNavire;i++)
 			{
-				modifierPosition(g,longueurAvant+i,largeurAvant,OCCUPE);
+				modifierPosition(g,verticalAvant+i,horizontaleAvant,OCCUPE);
 			}
 			return 1;
 		}			

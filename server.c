@@ -9,43 +9,64 @@ Serveur à lancer avant le client
 #include <string.h> 		/* pour bcopy, ... */  
 #define TAILLE_MAX_NOM 256
 
+#include <unistd.h>
+#include "structure.h"
+
 typedef struct sockaddr sockaddr;
 typedef struct sockaddr_in sockaddr_in;
 typedef struct hostent hostent;
 typedef struct servent servent;
 
-/*------------------------------------------------------*/
-void renvoi (int sock) {
+Grille g;
 
-    char buffer[256];
-    int longueur;
-   
-    if ((longueur = read(sock, buffer, sizeof(buffer))) <= 0) 
-    	return;
-    
-    printf("message lu : %s \n", buffer);
-    
-    buffer[longueur] = '#';
-    buffer[longueur+1] ='\0';
-    
-    printf("message apres traitement : %s \n", buffer);
-    
-    printf("renvoi du message traite.\n");
+static void *task_receptionCoordonnees(void *data_sock)
+{
+    if(data_sock != NULL)
+    {
+        int *sock = data_sock;
 
-    /* mise en attente du prgramme pour simuler un delai de transmission */
-    sleep(3);
-    
-    write(sock,buffer,strlen(buffer)+1);
-    
-    printf("message envoye. \n");
-        
-    return;
-    
+        char buffer[3];
+        int horiz,vert;
+
+        int longueur;
+       
+        if ((longueur = read(*sock, buffer, sizeof(buffer))) <= 0) 
+            return;
+
+        horiz = atoi(&buffer[0]);
+        vert = atoi(&buffer[2]);
+
+        printf("val : %d %d\n",horiz,vert);
+            
+        attaquerPosition(&g,horiz,vert);
+    }
+    return NULL;
 }
-/*------------------------------------------------------*/
 
-/*------------------------------------------------------*/
-main(int argc, char **argv) {
+static void *task_receptionGrille(void *data_sock)
+{
+    if(data_sock != NULL)
+    {
+        int *sock = data_sock;
+
+        char buffer[200];
+
+        int longueur;      
+        if ((longueur = read(*sock, buffer, sizeof(buffer))) <= 0) 
+            return;
+          
+        remplirGrilleByString(&g,buffer);
+    }
+    return NULL;
+}
+                                  
+main(int argc, char **argv) 
+{
+
+
+    /*------------------------------------------------------------------------------------------------
+    ---------------------         Partie Creation de la connexion         ----------------------------
+    ------------------------------------------------------------------------------------------------*/
   
     int 		socket_descriptor, 		/* descripteur de socket */
 			nouv_socket_descriptor, 	/* [nouveau] descripteur de socket */
@@ -59,7 +80,8 @@ main(int argc, char **argv) {
     gethostname(machine,TAILLE_MAX_NOM);		/* recuperation du nom de la machine */
     
     /* recuperation de la structure d'adresse en utilisant le nom */
-    if ((ptr_hote = gethostbyname(machine)) == NULL) {
+    if ((ptr_hote = gethostbyname(machine)) == NULL) 
+    {
 		perror("erreur : impossible de trouver le serveur a partir de son nom.");
 		exit(1);
     }
@@ -71,40 +93,28 @@ main(int argc, char **argv) {
     adresse_locale.sin_family		= ptr_hote->h_addrtype; 	/* ou AF_INET */
     adresse_locale.sin_addr.s_addr	= INADDR_ANY; 			/* ou AF_INET */
 
-    /* 2 facons de definir le service que l'on va utiliser a distance */
-    /* (commenter l'une ou l'autre des solutions) */
-    
-    /*-----------------------------------------------------------*/
-    /* SOLUTION 1 : utiliser un service existant, par ex. "irc" */
-    /*
-    if ((ptr_service = getservbyname("irc","tcp")) == NULL) {
-		perror("erreur : impossible de recuperer le numero de port du service desire.");
-		exit(1);
-    }
-    adresse_locale.sin_port = htons(ptr_service->s_port);
-    */
-    /*-----------------------------------------------------------*/
-    /* SOLUTION 2 : utiliser un nouveau numero de port */
+
     adresse_locale.sin_port = htons(5000);
-    /*-----------------------------------------------------------*/
     
-    printf("numero de port pour la connexion au serveur : %d \n", 
-		   ntohs(adresse_locale.sin_port) /*ntohs(ptr_service->s_port)*/);
+    printf("numero de port pour la connexion au serveur : %d \n", ntohs(adresse_locale.sin_port) /*ntohs(ptr_service->s_port)*/);
     
     /* creation de la socket */
-    if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
+    {
 		perror("erreur : impossible de creer la socket de connexion avec le client.");
 		exit(1);
     }
 
-  int yes = 1;	
-  if(setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
-    perror("setsockopt");
-    pthread_exit(NULL);
-  }
+    int yes = 1;	
+    if(setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) 
+    {
+        perror("setsockopt");
+        pthread_exit(NULL);
+    }
 
     /* association du socket socket_descriptor à la structure d'adresse adresse_locale */
-    if ((bind(socket_descriptor, (sockaddr*)(&adresse_locale), sizeof(adresse_locale))) < 0) {
+    if ((bind(socket_descriptor, (sockaddr*)(&adresse_locale), sizeof(adresse_locale))) < 0) 
+    {
 		perror("erreur : impossible de lier la socket a l'adresse de connexion.");
 		exit(1);
     }
@@ -112,41 +122,35 @@ main(int argc, char **argv) {
     /* initialisation de la file d'ecoute */
     listen(socket_descriptor,5);
 
+
+    /*------------------------------------------------------------------------------------------------
+    ---------------------               Partie Gestion du Jeu             ----------------------------
+    ------------------------------------------------------------------------------------------------*/
+
+    //init
+    g = initGrille();
+
     /* attente des connexions et traitement des donnees recues */
-    for(;;) {
+    while(1) 
+    {
     
 		longueur_adresse_courante = sizeof(adresse_client_courant);
 		
 		/* adresse_client_courant sera renseigné par accept via les infos du connect */
-		if ((nouv_socket_descriptor = 
-			accept(socket_descriptor, 
-			       (sockaddr*)(&adresse_client_courant),
-			       &longueur_adresse_courante))
-			 < 0) {
+		if ((nouv_socket_descriptor = accept(socket_descriptor, (sockaddr*)(&adresse_client_courant),&longueur_adresse_courante))< 0) 
+        {
 			perror("erreur : impossible d'accepter la connexion avec le client.");
 			exit(1);
 		}
-		
-		pid_t fils = fork();
 
-		if(fils)
-		{
-
-			/* traitement du message */
-			printf("reception d'un message.\n");
-		
-			renvoi(nouv_socket_descriptor);
-			
-			sleep(10);
-			
-			close(nouv_socket_descriptor);
-			
-			
-		}
-		
+        pthread_t t;
+        pthread_create (&t, NULL, task_receptionGrille, &nouv_socket_descriptor);
+        pthread_join (t, NULL);
+        afficherGrille(g);  
+        
+        close(nouv_socket_descriptor);
 
 
-		
     }
-    
+    return 1;    
 }
