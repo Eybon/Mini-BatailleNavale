@@ -29,15 +29,18 @@ struct Grille
 
 Grille initGrille();
 char* initTableauChar();
-char** initMatriceChar();
+char* setGrilleToTableau(Grille g);
 void remplirGrilleByString(Grille *g,char string[]);
-void remplirGrilleByMatrice(Grille *g,char** matrice);
 Etat inspecterPosition(Grille *g, int verticale, int horizontale);
 void modifierPosition(Grille *g, int verticale, int horizontale, Etat e);
 int attaquerPosition(Grille *g, int verticale, int horizontale);
 int placerNavire(Grille *g,int verticaleAvant,int horizontaleAvant, int tailleNavire, Axe axe);
+int selectionPositionVerticale();
+int selectionPositionHorizontale();
+Axe selectionAxe();
 void afficherGrille(Grille g);
-
+/*Attention probleme avec les fonctions utilisant des char** */
+char** initMatriceChar();
 char** setGrilleToMatrice(Grille g);
-char* setGrilleToTableau(Grille g);
+void remplirGrilleByMatrice(Grille *g,char** matrice);
 void affich(char** mat);

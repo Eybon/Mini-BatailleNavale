@@ -10,6 +10,7 @@ client <adresse-serveur> <message-a-transmettre>
 #include <string.h>
 
 #include <unistd.h>
+#include <stdbool.h> 
 #include "structure.h"
 
 typedef struct sockaddr 	sockaddr;
@@ -48,6 +49,31 @@ void envoieGrille(int sock,char* mat)
     }      
 }
 
+void initialisation(Grille *g)
+{
+    int i = 5;
+    for(i=5;i>2;i--)
+    {   
+        bool test = false;
+        while(test == false)
+        {
+            printf("---Placement du bateau de taille %d---\n",i);
+            int ph = selectionPositionHorizontale();
+            int pv = selectionPositionVerticale();
+            Axe axe = selectionAxe();
+            if (placerNavire(g,pv,ph,i,axe) == 1)
+            {
+                test = true;
+            }
+            else
+            {
+                printf("Erreur de positionnement !\n");
+            }
+            afficherGrille(*g);
+        }
+    }
+   
+}
 
 int main(int argc, char **argv) {
   
@@ -86,13 +112,12 @@ int main(int argc, char **argv) {
     printf("numero de port pour la connexion au serveur : %d \n", ntohs(adresse_locale.sin_port));
  
     Grille g = initGrille();
-    modifierPosition(&g,0,0,OCCUPE);
-    modifierPosition(&g,3,3,OCCUPE);
-    modifierPosition(&g,9,9,OCCUPE);
+    initialisation(&g);
 
-    //for(;;)
+    for(;;)
     {
 
+        selectionPositionVerticale();
             /* creation de la socket */
         if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
         {
@@ -123,10 +148,10 @@ int main(int argc, char **argv) {
         	write(1,buffer,longueur);
         }*/
 
-        close(socket_descriptor);
+        
 
     }  
-
+    close(socket_descriptor);
     
     
     printf("connexion avec le serveur fermee, fin du programme.\n");

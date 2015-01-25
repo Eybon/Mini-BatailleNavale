@@ -186,13 +186,14 @@ int placerNavire(Grille *g,int verticalAvant,int horizontaleAvant, int tailleNav
 	//placement d'un navire horizontal
 	if(axe == HORIZONTALE)
 	{
-		if((0<verticalAvant)&&(verticalAvant<TAILLE)&&(0<horizontaleAvant)&&(horizontaleAvant<TAILLE)&&(horizontaleAvant+tailleNavire-1<TAILLE))
+		if((0<=verticalAvant)&&(verticalAvant<TAILLE)&&(0<=horizontaleAvant)&&(horizontaleAvant<TAILLE)&&(horizontaleAvant+tailleNavire-1<TAILLE))
 		{
+			printf("ok\n");
 			int i;
 			//on verifie que les cases sont disponibles
 			for(i=0;i<tailleNavire;i++)
 			{
-				if(inspecterPosition(g,verticalAvant,horizontaleAvant)==OCCUPE)
+				if(inspecterPosition(g,verticalAvant,horizontaleAvant+i)==OCCUPE)
 				{
 					return -1;
 				}
@@ -208,13 +209,13 @@ int placerNavire(Grille *g,int verticalAvant,int horizontaleAvant, int tailleNav
 	//placement d'un navire vertical
 	if(axe == VERTICALE)
 	{
-		if((0<verticalAvant)&&(verticalAvant<TAILLE)&&(0<horizontaleAvant)&&(horizontaleAvant<TAILLE)&&(verticalAvant+tailleNavire-1<TAILLE))
+		if((0<=verticalAvant)&&(verticalAvant<TAILLE)&&(0<=horizontaleAvant)&&(horizontaleAvant<TAILLE)&&(verticalAvant+tailleNavire-1<TAILLE))
 		{
 			int i;
 			//on verifie que les cases sont disponibles
 			for(i=0;i<tailleNavire;i++)
 			{
-				if(inspecterPosition(g,verticalAvant,horizontaleAvant)==OCCUPE)
+				if(inspecterPosition(g,verticalAvant+i,horizontaleAvant)==OCCUPE)
 				{
 					return -1;
 				}
@@ -268,4 +269,50 @@ void afficherGrille(Grille g)
 		printf("----");
 	}
 	printf("-\n");
+}
+
+int selectionPositionHorizontale()
+{
+	int val = 0;
+	while((val<1)||(val>10))
+	{
+		char s[10] ;
+		printf("Coordonnée horizontale(de 1 à 10) : ");
+		scanf("%s",s);
+		val = atoi(s);
+	}
+	return val-1;
+}
+
+int selectionPositionVerticale()
+{
+	int val = 0;
+	while((val<1)||(val>10))
+	{
+		char s[10] ;
+		printf("Coordonnée verticale(de 1 à 10) : ");
+		scanf("%s",s);
+		val = atoi(s);
+	}
+	return val-1;
+}
+
+Axe selectionAxe()
+{	
+	char val = '0';
+	while((val!='h')&&(val!='v'))
+	{
+		char s[10] ;
+		printf("Horizontalement ou verticalement (h ou v) ? : ");
+		scanf("%s",s);
+		val = s[0];
+	}
+	if (val == 'h')
+	{
+		return HORIZONTALE;
+	}
+	else
+	{
+		return VERTICALE;
+	}
 }
