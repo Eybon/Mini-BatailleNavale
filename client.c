@@ -22,14 +22,10 @@ void envoieCoordonnees(int sock,int ph, int pv)
 {
     char buffer[3];
 
-    /*printf("Saisir la coordonnée horizontale : ");
-    scanf("%d",&tmp);*/
     buffer[0] = (char)(((int)'0')+ph);
 
     buffer[1] = ' ';
 
-    /*printf("Saisir la coordonnée verticale : ");
-    scanf("%d",&tmp);*/
     buffer[2] = (char)(((int)'0')+pv);
 
     if ((write(sock, buffer, strlen(buffer))) < 0) 
@@ -81,6 +77,22 @@ void action(int sock)
     envoieCoordonnees(sock,ph,pv);
 }
 
+int signalServeur(int sock)
+{
+        char buffer[3];
+        int longueur;      
+        if ((longueur = read(sock, buffer, sizeof(buffer))) <= 0) 
+        {
+            printf("Erreur de lecture !! \n");
+            exit(1);        
+        }
+        if ( (buffer[0]=='o') && (buffer[1]=='k') )
+        {
+            return 1;
+        }
+        return 0;
+}
+
 int main(int argc, char **argv) {
   
     int 	socket_descriptor;	/* descripteur de socket */
@@ -113,7 +125,6 @@ int main(int argc, char **argv) {
     adresse_locale.sin_family = AF_INET; /* ou ptr_host->h_addrtype; */
 
     adresse_locale.sin_port = htons(5000);
-   
     
     printf("numero de port pour la connexion au serveur : %d \n", ntohs(adresse_locale.sin_port));
       
@@ -138,31 +149,25 @@ int main(int argc, char **argv) {
     printf("message envoye au serveur. \n");
 
     Grille g = initGrille();
-    initialisation(&g);
+    //initialisation(&g);
 
-    //envoieCoordonnees(socket_descriptor);
     envoieGrille(socket_descriptor,setGrilleToTableau(g));
 
     while(1)
     {      
-        system("clear");    
-        char buffer[3];
-        int longueur;      
-        if ((longueur = read(socket_descriptor, buffer, sizeof(buffer))) <= 0) 
+        system("clear"); 
+        printf(" En attente de l'adversaire ....\n")  ;
+        if ( 1 == signalServeur(socket_descriptor))
         {
-            printf("Erreur de lecture !! \n");
-            exit(1);        
+            printf(" --- Votre action --- \n");  
+            action(socket_descriptor);
         }
-        printf(" --- Votre action --- \n");  
-        action(socket_descriptor);
     }  
     close(socket_descriptor);
-    
-    
+
     printf("connexion avec le serveur fermee, fin du programme.\n");
     
-    exit(0);
-    
+    exit(0);   
 }
 
         /* lecture de la reponse en provenance du serveur */

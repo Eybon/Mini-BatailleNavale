@@ -40,6 +40,7 @@ static void *task_gestionPartie(void *partie)
         while(1)
         {
             printf("autorise le joueur 1 à jouer\n");
+            printf(" socket : %d \n",p.socketJ1);
             if ((write(p.socketJ1, buff, strlen(buff))) < 0) 
             {
                 perror("erreur : impossible d'envoyer l'autorisation au client.");
@@ -49,18 +50,19 @@ static void *task_gestionPartie(void *partie)
             receptionCoordonnees(p,1);
 
             printf("autorise le joueur 2 à jouer\n");
+            printf(" socket : %d \n",p.socketJ2);
             if ((write(p.socketJ2, buff, strlen(buff))) < 0) 
             {
                 perror("erreur : impossible d'envoyer l'autorisation au client.");
                 exit(1);
             } 
-            printf("attente de l'action du joueur \n");
+            printf("attente de l'action du joueur 2\n");
             receptionCoordonnees(p,2);
 
             system("clear");
 
             afficherDuoGrille(*(p.gJ1),*(p.gJ2));
-        }
+        } 
     }
     return NULL;
 }
@@ -74,11 +76,13 @@ void receptionCoordonnees(Partie p, int joueur)
    
     if(joueur == 1)
     {   
+        printf("1\n");
         if ((longueur = read(p.socketJ1, buffer, sizeof(buffer))) <= 0) 
             return;
     }
     else
     {
+        printf("2\n");
         if ((longueur = read(p.socketJ2, buffer, sizeof(buffer))) <= 0) 
             return;
     }
@@ -209,9 +213,6 @@ int main(int argc, char **argv)
 		perror("erreur : impossible d'accepter la connexion avec le client.");
 		exit(1);
 	}
-    pthread_create (&t, NULL, task_receptionGrille, &first_socket_descriptor);
-
-    //isFirstPlayer = 1;
 
     longueur_adresse_courante = sizeof(adresse_client_courant); 
     /* adresse_client_courant sera renseigné par accept via les infos du connect */
@@ -220,6 +221,10 @@ int main(int argc, char **argv)
         perror("erreur : impossible d'accepter la connexion avec le client.");
         exit(1);
     }        
+
+    printf(" 1 : %d 2 : %d  \n",first_socket_descriptor,seconde_socket_descriptor);
+
+    pthread_create (&t, NULL, task_receptionGrille, &first_socket_descriptor);
     pthread_create (&t2, NULL, task_receptionGrille, &seconde_socket_descriptor);
 
     pthread_join (t, NULL);
