@@ -39,6 +39,9 @@ int selectionPositionVerticale();
 int selectionPositionHorizontale();
 Axe selectionAxe();
 void afficherGrille(Grille g);
+void afficherDuoGrille(Grille g, Grille g2);
+
+
 /*Attention probleme avec les fonctions utilisant des char** */
 char** initMatriceChar();
 char** setGrilleToMatrice(Grille g);

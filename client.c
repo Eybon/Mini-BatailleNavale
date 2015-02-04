@@ -18,20 +18,19 @@ typedef struct sockaddr_in 	sockaddr_in;
 typedef struct hostent 		hostent;
 typedef struct servent 		servent;
 
-void envoieCoordonnees(int sock)
+void envoieCoordonnees(int sock,int ph, int pv)
 {
     char buffer[3];
-    int tmp;
 
-    printf("Saisir la coordonnée horizontale : ");
-    scanf("%d",&tmp);
-    buffer[0] = (char)(((int)'0')+tmp);
+    /*printf("Saisir la coordonnée horizontale : ");
+    scanf("%d",&tmp);*/
+    buffer[0] = (char)(((int)'0')+ph);
 
     buffer[1] = ' ';
 
-    printf("Saisir la coordonnée verticale : ");
-    scanf("%d",&tmp);
-    buffer[2] = (char)(((int)'0')+tmp);
+    /*printf("Saisir la coordonnée verticale : ");
+    scanf("%d",&tmp);*/
+    buffer[2] = (char)(((int)'0')+pv);
 
     if ((write(sock, buffer, strlen(buffer))) < 0) 
     {
@@ -71,8 +70,15 @@ void initialisation(Grille *g)
             }
             afficherGrille(*g);
         }
-    }
-   
+    }  
+}
+
+void action(int sock)
+{
+    printf("---Choix des coordonnées d'attaque---\n");
+    int ph = selectionPositionHorizontale();
+    int pv = selectionPositionVerticale();
+    envoieCoordonnees(sock,ph,pv);
 }
 
 int main(int argc, char **argv) {
@@ -110,46 +116,45 @@ int main(int argc, char **argv) {
    
     
     printf("numero de port pour la connexion au serveur : %d \n", ntohs(adresse_locale.sin_port));
- 
+      
+    /* creation de la socket */
+    if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
+    {
+        perror("erreur : impossible de creer la socket de connexion avec le serveur.");
+        exit(1);
+    }
+
+    /* tentative de connexion au serveur dont les infos sont dans adresse_locale */
+    if ((connect(socket_descriptor, (sockaddr*)(&adresse_locale), sizeof(adresse_locale))) < 0) 
+    {
+    	perror("erreur : impossible de se connecter au serveur.");
+    	exit(1);
+    }
+    
+    printf("connexion etablie avec le serveur. \n");
+    
+    printf("envoi d'un message au serveur. \n");
+     
+    printf("message envoye au serveur. \n");
+
     Grille g = initGrille();
     initialisation(&g);
 
-    for(;;)
-    {
+    //envoieCoordonnees(socket_descriptor);
+    envoieGrille(socket_descriptor,setGrilleToTableau(g));
 
-        selectionPositionVerticale();
-            /* creation de la socket */
-        if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
+    while(1)
+    {      
+        system("clear");    
+        char buffer[3];
+        int longueur;      
+        if ((longueur = read(socket_descriptor, buffer, sizeof(buffer))) <= 0) 
         {
-            perror("erreur : impossible de creer la socket de connexion avec le serveur.");
-            exit(1);
+            printf("Erreur de lecture !! \n");
+            exit(1);        
         }
-
-        /* tentative de connexion au serveur dont les infos sont dans adresse_locale */
-        if ((connect(socket_descriptor, (sockaddr*)(&adresse_locale), sizeof(adresse_locale))) < 0) 
-        {
-        	perror("erreur : impossible de se connecter au serveur.");
-        	exit(1);
-        }
-        
-        printf("connexion etablie avec le serveur. \n");
-        
-        printf("envoi d'un message au serveur. \n");
-
-        //envoieCoordonnees(socket_descriptor);
-        envoieGrille(socket_descriptor,setGrilleToTableau(g));
-         
-        printf("message envoye au serveur. \n");
-                    
-        /* lecture de la reponse en provenance du serveur */
-        /*while((longueur = read(socket_descriptor, buffer, sizeof(buffer))) > 0) 
-        {
-        	printf("reponse du serveur : \n");
-        	write(1,buffer,longueur);
-        }*/
-
-        
-
+        printf(" --- Votre action --- \n");  
+        action(socket_descriptor);
     }  
     close(socket_descriptor);
     
@@ -159,3 +164,10 @@ int main(int argc, char **argv) {
     exit(0);
     
 }
+
+        /* lecture de la reponse en provenance du serveur */
+        /*while((longueur = read(socket_descriptor, buffer, sizeof(buffer))) > 0) 
+        {
+            printf("reponse du serveur : \n");
+            write(1,buffer,longueur);
+        }*/

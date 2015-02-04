@@ -188,7 +188,6 @@ int placerNavire(Grille *g,int verticalAvant,int horizontaleAvant, int tailleNav
 	{
 		if((0<=verticalAvant)&&(verticalAvant<TAILLE)&&(0<=horizontaleAvant)&&(horizontaleAvant<TAILLE)&&(horizontaleAvant+tailleNavire-1<TAILLE))
 		{
-			printf("ok\n");
 			int i;
 			//on verifie que les cases sont disponibles
 			for(i=0;i<tailleNavire;i++)
@@ -268,6 +267,77 @@ void afficherGrille(Grille g)
 	{
 		printf("----");
 	}
+	printf("-\n");
+}
+
+void afficherDuoGrille(Grille g,Grille g2)
+{
+	int i,j,k;
+	for(i=0;i<TAILLE;i++)
+	{	
+		for(k=0;k<TAILLE;k++)
+		{
+			printf("----");
+		}
+		printf("   ");
+		for(k=0;k<TAILLE;k++)
+		{
+			printf("----");
+		}		
+		printf("-\n");
+		printf("| ");		
+		for(j=0;j<TAILLE;j++)
+		{
+			if(g.matrice[i][j] == VIDE)
+			{
+				printf(" ");
+			}
+			if(g.matrice[i][j] == RATE)
+			{
+				printf("+");
+			}			
+			if(g.matrice[i][j] == OCCUPE)
+			{
+				printf("O");
+			}
+			if(g.matrice[i][j] == TOUCHE)
+			{
+				printf("X");
+			}
+			printf(" | ");						
+		}
+		printf(" | ");
+		for(j=0;j<TAILLE;j++)
+		{
+			if(g2.matrice[i][j] == VIDE)
+			{
+				printf(" ");
+			}
+			if(g2.matrice[i][j] == RATE)
+			{
+				printf("+");
+			}			
+			if(g2.matrice[i][j] == OCCUPE)
+			{
+				printf("O");
+			}
+			if(g2.matrice[i][j] == TOUCHE)
+			{
+				printf("X");
+			}
+			printf(" | ");						
+		}		
+		printf("\n");
+	}
+	for(k=0;k<TAILLE;k++)
+	{
+		printf("----");
+	}
+	printf("   ");
+	for(k=0;k<TAILLE;k++)
+	{
+		printf("----");
+	}	
 	printf("-\n");
 }
 

@@ -11,37 +11,91 @@ Serveur à lancer avant le client
 
 #include <unistd.h>
 #include <pthread.h>
-#include "structure.h"
+#include "partie.h"
 
 typedef struct sockaddr sockaddr;
 typedef struct sockaddr_in sockaddr_in;
 typedef struct hostent hostent;
 typedef struct servent servent;
 
-Grille g;
 
-static void *task_receptionCoordonnees(void *data_sock)
+Partie p;
+int isFirstPlayer;
+
+static void *task_gestionPartie(void *partie)
 {
-    if(data_sock != NULL)
+    Partie *partie2 = (Partie*) partie;
+    if(partie2 != NULL)
     {
-        int *sock = data_sock;
+        Partie p;
+        p.socketJ1 = (*partie2).socketJ1;
+        p.socketJ2 = (*partie2).socketJ2;
+        p.gJ1 = (*partie2).gJ1;
+        p.gJ2 = (*partie2).gJ2;
 
-        char buffer[3];
-        int horiz,vert;
 
-        int longueur;
-       
-        if ((longueur = read(*sock, buffer, sizeof(buffer))) <= 0) 
-            return NULL;
+        char buff[3] ;
+        buff[0] = 'o'; buff[1] = 'k'; 
 
-        horiz = atoi(&buffer[0]);
-        vert = atoi(&buffer[2]);
+        while(1)
+        {
+            printf("autorise le joueur 1 à jouer\n");
+            if ((write(p.socketJ1, buff, strlen(buff))) < 0) 
+            {
+                perror("erreur : impossible d'envoyer l'autorisation au client.");
+                exit(1);
+            } 
+            printf("attente de l'action du joueur 1\n");
+            receptionCoordonnees(p,1);
 
-        printf("val : %d %d\n",horiz,vert);
-            
-        attaquerPosition(&g,horiz,vert);
+            printf("autorise le joueur 2 à jouer\n");
+            if ((write(p.socketJ2, buff, strlen(buff))) < 0) 
+            {
+                perror("erreur : impossible d'envoyer l'autorisation au client.");
+                exit(1);
+            } 
+            printf("attente de l'action du joueur \n");
+            receptionCoordonnees(p,2);
+
+            system("clear");
+
+            afficherDuoGrille(*(p.gJ1),*(p.gJ2));
+        }
     }
     return NULL;
+}
+
+void receptionCoordonnees(Partie p, int joueur)
+{
+    char buffer[3];
+    int horiz,vert;
+
+    int longueur;
+   
+    if(joueur == 1)
+    {   
+        if ((longueur = read(p.socketJ1, buffer, sizeof(buffer))) <= 0) 
+            return;
+    }
+    else
+    {
+        if ((longueur = read(p.socketJ2, buffer, sizeof(buffer))) <= 0) 
+            return;
+    }
+
+    horiz = atoi(&buffer[0]);
+    vert = atoi(&buffer[2]);
+
+    printf("val : %d %d\n",horiz,vert);
+
+    if(joueur == 1)
+    {
+        attaquerPosition(p.gJ2,vert,horiz);
+    }
+    else
+    {
+        attaquerPosition(p.gJ1,vert,horiz);
+    }
 }
 
 static void *task_receptionGrille(void *data_sock)
@@ -55,8 +109,20 @@ static void *task_receptionGrille(void *data_sock)
         int longueur;      
         if ((longueur = read(*sock, buffer, sizeof(buffer))) <= 0) 
             return NULL;
-          
-        remplirGrilleByString(&g,buffer);
+        if(isFirstPlayer==0)  
+        {
+            p.socketJ1 = *sock;
+            remplirGrilleByString(p.gJ1,buffer);
+            isFirstPlayer = 1;
+        }
+        else
+        {
+            p.socketJ2 = *sock;
+            remplirGrilleByString(p.gJ2,buffer);
+            isFirstPlayer = 0;
+        }
+        afficherDuoGrille(*(p.gJ1),*(p.gJ2));
+
     }
     return NULL;
 }
@@ -70,7 +136,8 @@ int main(int argc, char **argv)
     ------------------------------------------------------------------------------------------------*/
   
     int 		socket_descriptor, 		/* descripteur de socket */
-			nouv_socket_descriptor;	/* [nouveau] descripteur de socket */
+			first_socket_descriptor,
+            seconde_socket_descriptor;	/* [nouveau] descripteur de socket */
 	socklen_t		longueur_adresse_courante; 	/* longueur d'adresse courante d'un client */
     sockaddr_in 	adresse_locale, 		/* structure d'adresse locale*/
 			adresse_client_courant; 	/* adresse client courant */
@@ -129,29 +196,43 @@ int main(int argc, char **argv)
     ------------------------------------------------------------------------------------------------*/
 
     //init
-    g = initGrille();
+    pthread_t t,t2,tpartie;
+    p = initPartie();
+    isFirstPlayer = 0;
 
     /* attente des connexions et traitement des donnees recues */
-    while(1) 
-    {
     
-		longueur_adresse_courante = sizeof(adresse_client_courant);
-		
-		/* adresse_client_courant sera renseigné par accept via les infos du connect */
-		if ((nouv_socket_descriptor = accept(socket_descriptor, (sockaddr*)(&adresse_client_courant),&longueur_adresse_courante))< 0) 
-        {
-			perror("erreur : impossible d'accepter la connexion avec le client.");
-			exit(1);
-		}
+	longueur_adresse_courante = sizeof(adresse_client_courant);	
+	/* adresse_client_courant sera renseigné par accept via les infos du connect */
+	if ((first_socket_descriptor = accept(socket_descriptor, (sockaddr*)(&adresse_client_courant),&longueur_adresse_courante))< 0) 
+    {
+		perror("erreur : impossible d'accepter la connexion avec le client.");
+		exit(1);
+	}
+    pthread_create (&t, NULL, task_receptionGrille, &first_socket_descriptor);
 
-        pthread_t t;
-        pthread_create (&t, NULL, task_receptionGrille, &nouv_socket_descriptor);
-        pthread_join (t, NULL);
-        afficherGrille(g);  
-        
-        close(nouv_socket_descriptor);
+    //isFirstPlayer = 1;
 
+    longueur_adresse_courante = sizeof(adresse_client_courant); 
+    /* adresse_client_courant sera renseigné par accept via les infos du connect */
+    if ((seconde_socket_descriptor = accept(socket_descriptor, (sockaddr*)(&adresse_client_courant),&longueur_adresse_courante))< 0) 
+    {
+        perror("erreur : impossible d'accepter la connexion avec le client.");
+        exit(1);
+    }        
+    pthread_create (&t2, NULL, task_receptionGrille, &seconde_socket_descriptor);
 
+    pthread_join (t, NULL);
+    pthread_join (t2, NULL);
+
+    //while(1) 
+    {
+        pthread_create(&tpartie,NULL,task_gestionPartie,&p);
+        pthread_join(tpartie,NULL);
+        //afficherGrille(*p.gJ1);  
+        //afficherGrille(*p.gJ2);
     }
+    close(first_socket_descriptor);
+    close(seconde_socket_descriptor);
     return 1;    
 }
