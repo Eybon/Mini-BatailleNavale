@@ -5,8 +5,8 @@ executable = client server
 
 all: $(executable)
 
-client: client.c structure.o structure.h
-	$(CC) $(CFLAGS) client.c structure.o -o client
+client: client.c structure.o structure.h partie.o partie.h
+	$(CC) $(CFLAGS) client.c structure.o partie.o -o client
 
 server: server.c structure.o structure.h partie.o partie.h
 	$(CC) $(CFLAGS) server.c structure.o partie.o -o server -lpthread

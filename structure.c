@@ -341,6 +341,79 @@ void afficherDuoGrille(Grille g,Grille g2)
 	printf("-\n");
 }
 
+/* g est la grille client, g2 la grille adversaire*/
+void affichageClient(Grille g, Grille g2)
+{
+	int i,j,k;
+	printf("         Votre Grille                                    Grille Adversaire\n");
+	for(i=0;i<TAILLE;i++)
+	{	
+		for(k=0;k<TAILLE;k++)
+		{
+			printf("----");
+		}
+		printf("   ");
+		for(k=0;k<TAILLE;k++)
+		{
+			printf("----");
+		}		
+		printf("-\n");
+		printf("| ");		
+		for(j=0;j<TAILLE;j++)
+		{
+			if(g.matrice[i][j] == VIDE)
+			{
+				printf(" ");
+			}
+			if(g.matrice[i][j] == RATE)
+			{
+				printf("+");
+			}			
+			if(g.matrice[i][j] == OCCUPE)
+			{
+				printf("O");
+			}
+			if(g.matrice[i][j] == TOUCHE)
+			{
+				printf("X");
+			}
+			printf(" | ");						
+		}
+		printf(" | ");
+		for(j=0;j<TAILLE;j++)
+		{
+			if(g2.matrice[i][j] == VIDE)
+			{
+				printf(" ");
+			}
+			if(g2.matrice[i][j] == RATE)
+			{
+				printf("+");
+			}			
+			if(g2.matrice[i][j] == OCCUPE)
+			{
+				printf(" "); // on ne veut pas voir les positions adversaires
+			}
+			if(g2.matrice[i][j] == TOUCHE)
+			{
+				printf("X");
+			}
+			printf(" | ");						
+		}		
+		printf("\n");
+	}
+	for(k=0;k<TAILLE;k++)
+	{
+		printf("----");
+	}
+	printf("   ");
+	for(k=0;k<TAILLE;k++)
+	{
+		printf("----");
+	}	
+	printf("-\n");
+}
+
 int selectionPositionHorizontale()
 {
 	int val = 0;

@@ -33,15 +33,22 @@ static void *task_gestionPartie(void *partie)
         p.gJ1 = (*partie2).gJ1;
         p.gJ2 = (*partie2).gJ2;
 
-
-        char buff[3] ;
-        buff[0] = 'o'; buff[1] = 'k'; 
+        if ((write(p.socketJ1, setGrilleToTableau(*(p.gJ2)), strlen(setGrilleToTableau(*(p.gJ2))))) < 0) 
+        {
+            perror("erreur : impossible d'envoyer l'autorisation au client.");
+            exit(1);
+        } 
+        if ((write(p.socketJ2, setGrilleToTableau(*(p.gJ1)), strlen(setGrilleToTableau(*(p.gJ1))))) < 0) 
+        {
+            perror("erreur : impossible d'envoyer l'autorisation au client.");
+            exit(1);
+        } 
 
         while(1)
         {
             printf("autorise le joueur 1 à jouer\n");
             printf(" socket : %d \n",p.socketJ1);
-            if ((write(p.socketJ1, buff, strlen(buff))) < 0) 
+            if ((write(p.socketJ1, setGrilleToTableau(*(p.gJ1)), strlen(setGrilleToTableau(*(p.gJ1))))) < 0) 
             {
                 perror("erreur : impossible d'envoyer l'autorisation au client.");
                 exit(1);
@@ -51,7 +58,7 @@ static void *task_gestionPartie(void *partie)
 
             printf("autorise le joueur 2 à jouer\n");
             printf(" socket : %d \n",p.socketJ2);
-            if ((write(p.socketJ2, buff, strlen(buff))) < 0) 
+            if ((write(p.socketJ2, setGrilleToTableau(*(p.gJ2)), strlen(setGrilleToTableau(*(p.gJ2))))) < 0) 
             {
                 perror("erreur : impossible d'envoyer l'autorisation au client.");
                 exit(1);
@@ -220,9 +227,10 @@ int main(int argc, char **argv)
     {
         perror("erreur : impossible d'accepter la connexion avec le client.");
         exit(1);
-    }        
+    }  
 
-    printf(" 1 : %d 2 : %d  \n",first_socket_descriptor,seconde_socket_descriptor);
+    envoieSignal(first_socket_descriptor);
+    envoieSignal(seconde_socket_descriptor);
 
     pthread_create (&t, NULL, task_receptionGrille, &first_socket_descriptor);
     pthread_create (&t2, NULL, task_receptionGrille, &seconde_socket_descriptor);

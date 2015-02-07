@@ -40,6 +40,7 @@ int selectionPositionHorizontale();
 Axe selectionAxe();
 void afficherGrille(Grille g);
 void afficherDuoGrille(Grille g, Grille g2);
+void affichageClient(Grille g, Grille g2);
 
 
 /*Attention probleme avec les fonctions utilisant des char** */

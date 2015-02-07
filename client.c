@@ -7,90 +7,23 @@ client <adresse-serveur> <message-a-transmettre>
 #include <linux/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#include <string.h>
 
 #include <unistd.h>
-#include <stdbool.h> 
-#include "structure.h"
+
+#include "partie.h"
 
 typedef struct sockaddr 	sockaddr;
 typedef struct sockaddr_in 	sockaddr_in;
 typedef struct hostent 		hostent;
 typedef struct servent 		servent;
 
-void envoieCoordonnees(int sock,int ph, int pv)
-{
-    char buffer[3];
-
-    buffer[0] = (char)(((int)'0')+ph);
-
-    buffer[1] = ' ';
-
-    buffer[2] = (char)(((int)'0')+pv);
-
-    if ((write(sock, buffer, strlen(buffer))) < 0) 
-    {
-        perror("erreur : impossible d'ecrire le message destine au serveur.");
-        exit(1);
-    }    
-}
-
-void envoieGrille(int sock,char* mat)
-{
-    if ((write(sock, mat, strlen(mat))) < 0) 
-    {
-        perror("erreur : impossible d'ecrire le message destine au serveur.");
-        exit(1);
-    }      
-}
-
-void initialisation(Grille *g)
-{
-    int i = 5;
-    for(i=5;i>2;i--)
-    {   
-        bool test = false;
-        while(test == false)
-        {
-            printf("---Placement du bateau de taille %d---\n",i);
-            int ph = selectionPositionHorizontale();
-            int pv = selectionPositionVerticale();
-            Axe axe = selectionAxe();
-            if (placerNavire(g,pv,ph,i,axe) == 1)
-            {
-                test = true;
-            }
-            else
-            {
-                printf("Erreur de positionnement !\n");
-            }
-            afficherGrille(*g);
-        }
-    }  
-}
-
-void action(int sock)
+void action(int sock, Grille *g)
 {
     printf("---Choix des coordonnées d'attaque---\n");
     int ph = selectionPositionHorizontale();
     int pv = selectionPositionVerticale();
+    attaquerPosition(g,pv,ph);
     envoieCoordonnees(sock,ph,pv);
-}
-
-int signalServeur(int sock)
-{
-        char buffer[3];
-        int longueur;      
-        if ((longueur = read(sock, buffer, sizeof(buffer))) <= 0) 
-        {
-            printf("Erreur de lecture !! \n");
-            exit(1);        
-        }
-        if ( (buffer[0]=='o') && (buffer[1]=='k') )
-        {
-            return 1;
-        }
-        return 0;
 }
 
 int main(int argc, char **argv) {
@@ -141,26 +74,28 @@ int main(int argc, char **argv) {
     	perror("erreur : impossible de se connecter au serveur.");
     	exit(1);
     }
-    
-    printf("connexion etablie avec le serveur. \n");
-    
-    printf("envoi d'un message au serveur. \n");
-     
-    printf("message envoye au serveur. \n");
+
+    printf(" Recherche d'un adversaire en cours ....\n")  ;
+    receptionSignal(socket_descriptor);
 
     Grille g = initGrille();
-    //initialisation(&g);
-
+    Grille gAdv = initGrille();
+    initialisationDebutPartie(&g);
     envoieGrille(socket_descriptor,setGrilleToTableau(g));
 
+    printf(" En attente de l'adversaire ....\n")  ;
+    receptionGrille(socket_descriptor,&gAdv);
     while(1)
     {      
         system("clear"); 
+        affichageClient(g,gAdv);        
         printf(" En attente de l'adversaire ....\n")  ;
-        if ( 1 == signalServeur(socket_descriptor))
+        if ( 1 == receptionGrille(socket_descriptor,&g))
         {
+            system("clear");
+            affichageClient(g,gAdv);
             printf(" --- Votre action --- \n");  
-            action(socket_descriptor);
+            action(socket_descriptor,&gAdv);
         }
     }  
     close(socket_descriptor);
@@ -169,10 +104,3 @@ int main(int argc, char **argv) {
     
     exit(0);   
 }
-
-        /* lecture de la reponse en provenance du serveur */
-        /*while((longueur = read(socket_descriptor, buffer, sizeof(buffer))) > 0) 
-        {
-            printf("reponse du serveur : \n");
-            write(1,buffer,longueur);
-        }*/
