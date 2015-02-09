@@ -52,7 +52,8 @@ void envoieCoordonnees(int sock,int ph, int pv)
 int receptionSignal(int sock)
 {
     char buffer[3];
-    int longueur;      
+    int longueur; 
+    printf("Reception - sock : %d \n",sock);     
     if ((longueur = read(sock, buffer, sizeof(buffer))) <= 0) 
     {
         printf("Erreur de lecture !! \n");
@@ -64,6 +65,7 @@ int receptionSignal(int sock)
 void envoieSignal(int sock)
 {
 	char buffer[3];
+    printf("Envoi - sock : %d \n",sock);
     if ((write(sock, buffer, strlen(buffer))) < 0) 
     {
         perror("erreur : impossible d'ecrire le message destine au serveur.");
