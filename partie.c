@@ -1,13 +1,23 @@
 #include "partie.h"
 
+Partie* initPartieP()
+{
+	Partie *p = (Partie*)malloc(sizeof(Partie));
+	p->gJ1 = (Grille*)malloc(sizeof(Grille));
+	*(p->gJ1) = initGrille();
+	p->gJ2 = (Grille*)malloc(sizeof(Grille));
+	*(p->gJ2) = initGrille();
+	return p;
+}
+
 Partie initPartie()
 {
-	Partie p;
-	p.gJ1 = (Grille*)malloc(sizeof(Grille));
-	*(p.gJ1) = initGrille();
-	p.gJ2 = (Grille*)malloc(sizeof(Grille));
-	*(p.gJ2) = initGrille();
-	return p;
+    Partie p;
+    p.gJ1 = (Grille*)malloc(sizeof(Grille));
+    *(p.gJ1) = initGrille();
+    p.gJ2 = (Grille*)malloc(sizeof(Grille));
+    *(p.gJ2) = initGrille();
+    return p;
 }
 
 void envoieGrille(int sock,char* mat)
@@ -25,7 +35,7 @@ int receptionGrille(int sock,Grille *g)
         int longueur;      
         if ((longueur = read(sock, buffer, sizeof(buffer))) <= 0) 
         {
-            printf("Erreur de lecture !! \n");
+            printf("Erreur de lecture !! -receptionGrille-\n");
             exit(1);        
         }
         remplirGrilleByString(g,buffer);
@@ -56,7 +66,7 @@ int receptionSignal(int sock)
     printf("Reception - sock : %d \n",sock);     
     if ((longueur = read(sock, buffer, sizeof(buffer))) <= 0) 
     {
-        printf("Erreur de lecture !! \n");
+        printf("Erreur de lecture !! -receptionsignal- \n");
         exit(1);        
     }
     return 1;
@@ -76,7 +86,7 @@ void envoieSignal(int sock)
 void initialisationDebutPartie(Grille *g)
 {
     int i = 5;
-    for(i=5;i>2;i--)
+    for(i=5;i>4;i--)
     {   
         bool test = false;
         while(test == false)

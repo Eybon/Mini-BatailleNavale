@@ -83,13 +83,13 @@ int main(int argc, char **argv) {
     initialisationDebutPartie(&g);
     envoieGrille(socket_descriptor,setGrilleToTableau(g));
 
-    printf(" En attente de l'adversaire ....\n")  ;
+    printf(" En attente de l'adversaire .... (Initialisation)\n")  ;
     receptionGrille(socket_descriptor,&gAdv);
     while(1)
     {      
         system("clear"); 
         affichageClient(g,gAdv);        
-        printf(" En attente de l'adversaire ....\n")  ;
+        printf(" En attente de l'adversaire ....(Action)\n")  ;
         if ( 1 == receptionGrille(socket_descriptor,&g))
         {
             system("clear");

@@ -14,6 +14,7 @@ struct Partie
 	Grille *gJ2;
 };
 
+Partie* initPartieP();
 Partie initPartie();
 void envoieGrille(int sock,char* mat);
 int receptionGrille(int sock,Grille *g);
