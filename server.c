@@ -30,21 +30,23 @@ void receptionCoordonnees(Partie p, int joueur)
    
     if(joueur == 1)
     {   
-        printf("1\n");
+        
         if ((longueur = read(p.socketJ1, buffer, sizeof(buffer))) <= 0) 
             return;
+        printf(" -> reception coordonnée joueur 1\n");
     }
     else
     {
-        printf("2\n");
+        
         if ((longueur = read(p.socketJ2, buffer, sizeof(buffer))) <= 0) 
             return;
+        printf(" -> reception coordonnée joueur 2\n");
     }
 
     horiz = atoi(&buffer[0]);
     vert = atoi(&buffer[2]);
 
-    printf("val : %d %d\n",horiz,vert);
+    printf("valeur d'attaque : %d %d\n",horiz,vert);
 
     if(joueur == 1)
     {
@@ -103,6 +105,7 @@ static void *task_receptionGrilleJ1(void *partie)
         remplirGrilleByString(p.gJ1,buffer);
 
     }
+    printf("Reception grille du J1\n");
     return NULL;
 }
 
@@ -124,6 +127,7 @@ static void *task_receptionGrilleJ2(void *partie)
         remplirGrilleByString(p.gJ2,buffer);
 
     }
+    printf("Reception grille du J2\n");
     return NULL;
 }
 
@@ -144,7 +148,7 @@ static void *task_gestionPartie(void *partie)
     if(i != NULL)
     {
         int nbPartie = (int) *i;    // tabPartie[nbPartie]
-        printf(" test : %d \n",nbPartie);
+        printf(" Gestion de la partie(value de nbPartie) : %d \n",nbPartie);
 
         printf("Dans gestionPartie, socket 1 : %d socket 2 :%d\n",tabPartie[nbPartie].socketJ1,tabPartie[nbPartie].socketJ2);
 
@@ -158,7 +162,8 @@ static void *task_gestionPartie(void *partie)
             perror("erreur : impossible d'envoyer l'autorisation au client.");
             exit(1);
         } 
-
+        printf("envoie des grilles au 2 joueurs : ok\n");
+        sleep(1);
         while(1)
         {
             printf("autorise le joueur 1 à jouer\n");
@@ -181,9 +186,9 @@ static void *task_gestionPartie(void *partie)
             printf("attente de l'action du joueur 2\n");
             receptionCoordonnees(tabPartie[nbPartie],2);
 
-            system("clear");
+            //system("clear");
 
-            afficherDuoGrille(*(tabPartie[nbPartie].gJ1),*(tabPartie[nbPartie].gJ2));
+            //afficherDuoGrille(*(tabPartie[nbPartie].gJ1),*(tabPartie[nbPartie].gJ2));
         } 
         
         close(tabPartie[nbPartie].socketJ1);
@@ -262,8 +267,8 @@ int main(int argc, char **argv)
 
     tabPartie[0] = initPartie();
     tabPartie[1] = initPartie();
-        tabPartie[2] = initPartie();
-            tabPartie[3] = initPartie();
+    tabPartie[2] = initPartie();
+    tabPartie[3] = initPartie();
     int nbPartie = 0;
 
     //init
@@ -282,7 +287,7 @@ int main(int argc, char **argv)
     	}
         tabPartie[nbPartie].socketJ1 = first_socket_descriptor;
 
-        //printf("Partie %d - Socket 1 : %d \n",nbPartie,tabPartie[nbPartie].socketJ1);
+        printf("Partie %d - Socket 1 : %d \n",nbPartie,tabPartie[nbPartie].socketJ1);
         //envoieSignal(first_socket_descriptor);
 
         longueur_adresse_courante = sizeof(adresse_client_courant); 
@@ -293,14 +298,15 @@ int main(int argc, char **argv)
             exit(1);
         }  
         tabPartie[nbPartie].socketJ2 = seconde_socket_descriptor;
+
+        printf("Partie %d - Socket 2 : %d \n",nbPartie,tabPartie[nbPartie].socketJ2);
         //envoieSignal(seconde_socket_descriptor);
 
-        //printf("Partie %d - Socket 2 : %d \n",nbPartie,tabPartie[nbPartie].socketJ2);
-
+        
         pthread_t t,t2;
         
-        envoieSignal(first_socket_descriptor);
-        envoieSignal(seconde_socket_descriptor);
+        envoieSignal(tabPartie[nbPartie].socketJ1);
+        envoieSignal(tabPartie[nbPartie].socketJ2);
 
         pthread_create (&t, NULL, task_receptionGrilleJ1, &tabPartie[nbPartie]);
         pthread_create (&t2, NULL, task_receptionGrilleJ2, &tabPartie[nbPartie]);

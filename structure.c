@@ -63,7 +63,17 @@ void remplirGrilleByString(Grille *g,char string[])
 			if(string[i*10+j]=='O')
 				modifierPosition(g,i,j,OCCUPE);
 			if(string[i*10+j]=='X')
-				modifierPosition(g,i,j,TOUCHE);			
+				modifierPosition(g,i,j,TOUCHE);	
+			if(string[i*10+j]=='1')
+				modifierPosition(g,i,j,BAT1);	
+			if(string[i*10+j]=='2')
+				modifierPosition(g,i,j,BAT2);	
+			if(string[i*10+j]=='3')
+				modifierPosition(g,i,j,BAT3);	
+			if(string[i*10+j]=='4')
+				modifierPosition(g,i,j,BAT4);	
+			if(string[i*10+j]=='5')
+				modifierPosition(g,i,j,BAT5);																													
 		}
 	}
 }
@@ -83,7 +93,17 @@ void remplirGrilleByMatrice(Grille *g,char** matrice)
 			if(matrice[i][j]=='O')
 				modifierPosition(g,i,j,OCCUPE);
 			if(matrice[i][j]=='X')
-				modifierPosition(g,i,j,TOUCHE);			
+				modifierPosition(g,i,j,TOUCHE);	
+			if(matrice[i][j]=='1')
+				modifierPosition(g,i,j,BAT1);	
+			if(matrice[i][j]=='2')
+				modifierPosition(g,i,j,BAT2);	
+			if(matrice[i][j]=='3')
+				modifierPosition(g,i,j,BAT3);	
+			if(matrice[i][j]=='4')
+				modifierPosition(g,i,j,BAT4);	
+			if(matrice[i][j]=='5')
+				modifierPosition(g,i,j,BAT5);																							
 		}
 	}
 }
@@ -105,6 +125,16 @@ char* setGrilleToTableau(Grille g)
 				matrice[i*10+j]='O';
 			if(g.matrice[i][j]==TOUCHE)
 				matrice[i*10+j]='X';
+			if(g.matrice[i][j]==BAT1)
+				matrice[i*10+j]='1';
+			if(g.matrice[i][j]==BAT2)
+				matrice[i*10+j]='2';
+			if(g.matrice[i][j]==BAT3)
+				matrice[i*10+j]='3';
+			if(g.matrice[i][j]==BAT4)
+				matrice[i*10+j]='4';
+			if(g.matrice[i][j]==BAT5)
+				matrice[i*10+j]='5';				
 		}
 	}
 	return matrice;
@@ -127,6 +157,16 @@ char** setGrilleToMatrice(Grille g)
 				matrice[i][j]='O';
 			if(g.matrice[i][j]==TOUCHE)
 				matrice[i][j]='X';
+			if(g.matrice[i][j]==BAT1)
+				matrice[i][j]='1';
+			if(g.matrice[i][j]==BAT2)
+				matrice[i][j]='2';
+			if(g.matrice[i][j]==BAT3)
+				matrice[i][j]='3';
+			if(g.matrice[i][j]==BAT4)
+				matrice[i][j]='4';
+			if(g.matrice[i][j]==BAT5)
+				matrice[i][j]='5';																			
 		}
 	}
 	return matrice;
@@ -158,7 +198,7 @@ void modifierPosition(Grille *g, int vertical, int horizontale, Etat e)
 }
 
 /*
-*Retourne 0 si la case ciblé est vide, 1 si la case est occupé, -1 pour les erreurs autres cas
+*Retourne 0 si la case ciblé est vide, l'etat de la case si la case est occupé, -1 pour les erreurs autres cas
 */
 int attaquerPosition(Grille *g, int vertical, int horizontale)
 {
@@ -174,6 +214,31 @@ int attaquerPosition(Grille *g, int vertical, int horizontale)
 			g->matrice[vertical][horizontale] = TOUCHE;
 			return 1;
 		}
+		if(g->matrice[vertical][horizontale] == BAT1)
+		{
+			g->matrice[vertical][horizontale] = TOUCHE;
+			return BAT1;
+		}
+		if(g->matrice[vertical][horizontale] == BAT2)
+		{
+			g->matrice[vertical][horizontale] = TOUCHE;
+			return BAT2;
+		}
+		if(g->matrice[vertical][horizontale] == BAT3)
+		{
+			g->matrice[vertical][horizontale] = TOUCHE;
+			return BAT3;
+		}
+		if(g->matrice[vertical][horizontale] == BAT4)
+		{
+			g->matrice[vertical][horizontale] = TOUCHE;
+			return BAT4;
+		}
+		if(g->matrice[vertical][horizontale] == BAT5)
+		{
+			g->matrice[vertical][horizontale] = TOUCHE;
+			return BAT5;
+		}										
 	}
 	return -1;
 }
@@ -181,7 +246,7 @@ int attaquerPosition(Grille *g, int vertical, int horizontale)
 /*
 *Retourne 1 si le le placement du navire est ok, -1 sinon
 */
-int placerNavire(Grille *g,int verticalAvant,int horizontaleAvant, int tailleNavire, Axe axe)
+int placerNavire(Grille *g,int verticalAvant,int horizontaleAvant, int tailleNavire, Axe axe, Etat numBateau)
 {
 	//placement d'un navire horizontal
 	if(axe == HORIZONTALE)
@@ -192,7 +257,9 @@ int placerNavire(Grille *g,int verticalAvant,int horizontaleAvant, int tailleNav
 			//on verifie que les cases sont disponibles
 			for(i=0;i<tailleNavire;i++)
 			{
-				if(inspecterPosition(g,verticalAvant,horizontaleAvant+i)==OCCUPE)
+				if((inspecterPosition(g,verticalAvant,horizontaleAvant+i)==OCCUPE)||(inspecterPosition(g,verticalAvant,horizontaleAvant+i)==BAT1)||
+					(inspecterPosition(g,verticalAvant,horizontaleAvant+i)==BAT2)||(inspecterPosition(g,verticalAvant,horizontaleAvant+i)==BAT3)||
+					(inspecterPosition(g,verticalAvant,horizontaleAvant+i)==BAT4)||(inspecterPosition(g,verticalAvant,horizontaleAvant+i)==BAT5))
 				{
 					return -1;
 				}
@@ -200,7 +267,7 @@ int placerNavire(Grille *g,int verticalAvant,int horizontaleAvant, int tailleNav
 			//on place les navires			
 			for(i=0;i<tailleNavire;i++)
 			{
-				modifierPosition(g,verticalAvant,horizontaleAvant+i,OCCUPE);
+				modifierPosition(g,verticalAvant,horizontaleAvant+i,numBateau);
 			}
 			return 1;
 		}
@@ -214,7 +281,9 @@ int placerNavire(Grille *g,int verticalAvant,int horizontaleAvant, int tailleNav
 			//on verifie que les cases sont disponibles
 			for(i=0;i<tailleNavire;i++)
 			{
-				if(inspecterPosition(g,verticalAvant+i,horizontaleAvant)==OCCUPE)
+				if((inspecterPosition(g,verticalAvant+i,horizontaleAvant)==OCCUPE)||(inspecterPosition(g,verticalAvant+i,horizontaleAvant)==BAT1)||
+					(inspecterPosition(g,verticalAvant+i,horizontaleAvant)==BAT2)||(inspecterPosition(g,verticalAvant+i,horizontaleAvant)==BAT3)||
+					(inspecterPosition(g,verticalAvant+i,horizontaleAvant)==BAT4)||(inspecterPosition(g,verticalAvant+i,horizontaleAvant)==BAT5))
 				{
 					return -1;
 				}
@@ -222,7 +291,7 @@ int placerNavire(Grille *g,int verticalAvant,int horizontaleAvant, int tailleNav
 			//on place les navires		
 			for(i=0;i<tailleNavire;i++)
 			{
-				modifierPosition(g,verticalAvant+i,horizontaleAvant,OCCUPE);
+				modifierPosition(g,verticalAvant+i,horizontaleAvant,numBateau);
 			}
 			return 1;
 		}			
@@ -259,6 +328,26 @@ void afficherGrille(Grille g)
 			{
 				printf("X");
 			}
+			if(g.matrice[i][j] == BAT1)
+			{
+				printf("1");
+			}
+			if(g.matrice[i][j] == BAT2)
+			{
+				printf("2");
+			}
+			if(g.matrice[i][j] == BAT3)
+			{
+				printf("3");
+			}
+			if(g.matrice[i][j] == BAT4)
+			{
+				printf("4");
+			}
+			if(g.matrice[i][j] == BAT5)
+			{
+				printf("5");
+			}															
 			printf(" | ");						
 		}
 		printf("\n");
@@ -304,6 +393,26 @@ void afficherDuoGrille(Grille g,Grille g2)
 			{
 				printf("X");
 			}
+			if(g.matrice[i][j] == BAT1)
+			{
+				printf("1");
+			}
+			if(g.matrice[i][j] == BAT2)
+			{
+				printf("2");
+			}
+			if(g.matrice[i][j] == BAT3)
+			{
+				printf("3");
+			}
+			if(g.matrice[i][j] == BAT4)
+			{
+				printf("4");
+			}
+			if(g.matrice[i][j] == BAT5)
+			{
+				printf("5");
+			}									
 			printf(" | ");						
 		}
 		printf(" | ");
@@ -325,6 +434,26 @@ void afficherDuoGrille(Grille g,Grille g2)
 			{
 				printf("X");
 			}
+			if(g2.matrice[i][j] == BAT1)
+			{
+				printf("1");
+			}
+			if(g2.matrice[i][j] == BAT2)
+			{
+				printf("2");
+			}
+			if(g2.matrice[i][j] == BAT3)
+			{
+				printf("3");
+			}
+			if(g2.matrice[i][j] == BAT4)
+			{
+				printf("4");
+			}
+			if(g2.matrice[i][j] == BAT5)
+			{
+				printf("5");
+			}			
 			printf(" | ");						
 		}		
 		printf("\n");
@@ -377,6 +506,26 @@ void affichageClient(Grille g, Grille g2)
 			{
 				printf("X");
 			}
+			if(g.matrice[i][j] == BAT1)
+			{
+				printf("1");
+			}
+			if(g.matrice[i][j] == BAT2)
+			{
+				printf("2");
+			}
+			if(g.matrice[i][j] == BAT3)
+			{
+				printf("3");
+			}
+			if(g.matrice[i][j] == BAT4)
+			{
+				printf("4");
+			}
+			if(g.matrice[i][j] == BAT5)
+			{
+				printf("5");
+			}			
 			printf(" | ");						
 		}
 		printf(" | ");
@@ -398,6 +547,26 @@ void affichageClient(Grille g, Grille g2)
 			{
 				printf("X");
 			}
+			if(g2.matrice[i][j] == BAT1)
+			{
+				printf(" ");
+			}
+			if(g2.matrice[i][j] == BAT2)
+			{
+				printf(" ");
+			}
+			if(g2.matrice[i][j] == BAT3)
+			{
+				printf(" ");
+			}
+			if(g2.matrice[i][j] == BAT4)
+			{
+				printf(" ");
+			}
+			if(g2.matrice[i][j] == BAT5)
+			{
+				printf(" ");
+			}			
 			printf(" | ");						
 		}		
 		printf("\n");
@@ -458,4 +627,54 @@ Axe selectionAxe()
 	{
 		return VERTICALE;
 	}
+}
+
+int rechercheBateau(Grille g,Etat e)
+{
+	int i,j;
+	int count = 0;
+	for(i=0;i<TAILLE;i++)
+	{
+		for(j=0;j<TAILLE;j++)
+		{
+			if(g.matrice[i][j]==e)
+			{
+				count++;
+			}
+		}
+	}
+	return count;
+}
+
+int rechercheFinDePartie(Grille g)
+{
+	int i,j;
+	int count = 0;
+	for(i=0;i<TAILLE;i++)
+	{
+		for(j=0;j<TAILLE;j++)
+		{
+			if(g.matrice[i][j]==BAT1)
+			{
+				count++;
+			}
+			if(g.matrice[i][j]==BAT2)
+			{
+				count++;
+			}
+			if(g.matrice[i][j]==BAT3)
+			{
+				count++;
+			}
+			if(g.matrice[i][j]==BAT4)
+			{
+				count++;
+			}
+			if(g.matrice[i][j]==BAT5)
+			{
+				count++;
+			}												
+		}
+	}
+	return count;
 }

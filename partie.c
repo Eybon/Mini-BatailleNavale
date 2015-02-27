@@ -86,6 +86,7 @@ void envoieSignal(int sock)
 void initialisationDebutPartie(Grille *g)
 {
     int i = 5;
+    int numBateau = 4; // BAT1=4 , BAT2=5 etc ...
     for(i=5;i>4;i--)
     {   
         bool test = false;
@@ -95,7 +96,7 @@ void initialisationDebutPartie(Grille *g)
             int ph = selectionPositionHorizontale();
             int pv = selectionPositionVerticale();
             Axe axe = selectionAxe();
-            if (placerNavire(g,pv,ph,i,axe) == 1)
+            if (placerNavire(g,pv,ph,i,axe,numBateau) == 1)
             {
                 test = true;
             }
@@ -105,5 +106,6 @@ void initialisationDebutPartie(Grille *g)
             }
             afficherGrille(*g);
         }
+        numBateau++;
     }  
 }

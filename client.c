@@ -7,7 +7,7 @@ client <adresse-serveur> <message-a-transmettre>
 #include <linux/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
-
+#include <signal.h>
 #include <unistd.h>
 
 #include "partie.h"
@@ -17,18 +17,77 @@ typedef struct sockaddr_in 	sockaddr_in;
 typedef struct hostent 		hostent;
 typedef struct servent 		servent;
 
+int socket_descriptor;  /* descripteur de socket */
+int victoire;
+
+void traitementsignal(int signal) 
+{
+    close(socket_descriptor);
+    system("clear");
+    if(1==victoire)
+    {
+        printf(" -------------------------------------\n");
+        printf(" -            VICTOIRE !!!           -\n");
+        printf(" -------------------------------------\n");
+    }
+    else
+    {
+        if(0==victoire)
+        {
+            printf(" -------------------------------------\n");
+            printf(" -            DEFAITE ...            -\n");
+            printf(" -------------------------------------\n");
+        } 
+    }
+    exit(1);
+}
+
 void action(int sock, Grille *g)
 {
     printf("---Choix des coordonnées d'attaque---\n");
     int ph = selectionPositionHorizontale();
     int pv = selectionPositionVerticale();
-    attaquerPosition(g,pv,ph);
+    int type = attaquerPosition(g,pv,ph);
     envoieCoordonnees(sock,ph,pv);
+    if((type==BAT1)||(type==BAT2)||(type==BAT3)||(type==BAT4)||(type==BAT5))
+    {
+        printf(" ------------------------------------------\n");
+        printf(" ->  Touché !                             -\n");
+        if(0==rechercheBateau(*g,type))
+        {
+            printf(" -> Vous avez coulé un bateau adverse !   -\n");
+        }
+        printf(" ------------------------------------------\n");
+    }
+    else
+    {
+        printf(" ------------------------------------------\n");
+        printf(" ->  Raté !                               -\n");
+        printf(" ------------------------------------------\n");
+    }
+    if(0==rechercheFinDePartie(*g))
+    {
+        victoire = 1;
+        kill(getpid(),SIGQUIT);
+    }
+}
+
+void actionReception(Grille *g)
+{
+    if(0==rechercheFinDePartie(*g))
+    {
+        victoire = 0;
+        kill(getpid(),SIGQUIT);
+    }
 }
 
 int main(int argc, char **argv) {
   
-    int 	socket_descriptor;	/* descripteur de socket */
+    //traitement des signaux
+    signal(SIGQUIT,traitementsignal);//traitement pour Quitter avec END
+    signal(SIGINT,traitementsignal);//taitement pour le signal Ctrl-C
+    victoire = -1;
+
     sockaddr_in adresse_locale; 	/* adresse de socket local */
     hostent *	ptr_host; 		/* info sur une machine hote */
     //servent *	ptr_service; 		/* info sur service */
@@ -77,6 +136,7 @@ int main(int argc, char **argv) {
 
     printf(" Recherche d'un adversaire en cours ....\n")  ;
     receptionSignal(socket_descriptor);
+    printf(" Signal recu \n")  ;
 
     Grille g = initGrille();
     Grille gAdv = initGrille();
@@ -85,14 +145,18 @@ int main(int argc, char **argv) {
 
     printf(" En attente de l'adversaire .... (Initialisation)\n")  ;
     receptionGrille(socket_descriptor,&gAdv);
+    printf(" Grille Recu \n");
+    //afficherGrille(gAdv);
+    system("clear");
     while(1)
     {      
-        system("clear"); 
-        affichageClient(g,gAdv);        
+        //system("clear"); 
+        //affichageClient(g,gAdv);        
         printf(" En attente de l'adversaire ....(Action)\n")  ;
         if ( 1 == receptionGrille(socket_descriptor,&g))
         {
-            system("clear");
+            system("clear");    
+            actionReception(&g);
             affichageClient(g,gAdv);
             printf(" --- Votre action --- \n");  
             action(socket_descriptor,&gAdv);
@@ -104,3 +168,5 @@ int main(int argc, char **argv) {
     
     exit(0);   
 }
+
+

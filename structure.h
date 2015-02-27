@@ -7,7 +7,7 @@
 typedef enum Etat Etat;
 enum Etat
 {
-    VIDE, RATE, OCCUPE, TOUCHE
+    VIDE, RATE, OCCUPE, TOUCHE, BAT1, BAT2, BAT3, BAT4, BAT5
 };
 
 typedef enum Axe Axe;
@@ -34,7 +34,9 @@ void remplirGrilleByString(Grille *g,char string[]);
 Etat inspecterPosition(Grille *g, int verticale, int horizontale);
 void modifierPosition(Grille *g, int verticale, int horizontale, Etat e);
 int attaquerPosition(Grille *g, int verticale, int horizontale);
-int placerNavire(Grille *g,int verticaleAvant,int horizontaleAvant, int tailleNavire, Axe axe);
+int rechercheBateau(Grille g,Etat e);
+int rechercheFinDePartie(Grille g);
+int placerNavire(Grille *g,int verticaleAvant,int horizontaleAvant, int tailleNavire, Axe axe, Etat num);
 int selectionPositionVerticale();
 int selectionPositionHorizontale();
 Axe selectionAxe();
