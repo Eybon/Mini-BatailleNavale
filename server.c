@@ -20,8 +20,8 @@ typedef struct servent servent;
 
 Partie tabPartie[20];
 
-
-void receptionCoordonnees(Partie p, int joueur)
+/*return 1 si la lecture est bugger (client lost)*/
+int receptionCoordonnees(Partie p, int joueur)
 {
     char buffer[3];
     int horiz,vert;
@@ -32,14 +32,20 @@ void receptionCoordonnees(Partie p, int joueur)
     {   
         
         if ((longueur = read(p.socketJ1, buffer, sizeof(buffer))) <= 0) 
-            return;
+        {
+            gameOverGrille(p.gJ2);
+            return 1;
+        }
         printf(" -> reception coordonnée joueur 1\n");
     }
     else
     {
         
         if ((longueur = read(p.socketJ2, buffer, sizeof(buffer))) <= 0) 
-            return;
+        {
+            gameOverGrille(p.gJ1);
+            return 1;
+        }
         printf(" -> reception coordonnée joueur 2\n");
     }
 
@@ -56,6 +62,7 @@ void receptionCoordonnees(Partie p, int joueur)
     {
         attaquerPosition(p.gJ1,vert,horiz);
     }
+    return 0;
 }
 /*
 static void *task_receptionGrille(void *data_sock)
@@ -99,14 +106,15 @@ static void *task_receptionGrilleJ1(void *partie)
         p.gJ2 = (*partie2).gJ2;
 
         char buffer[200];
-        int longueur;      
+        int longueur;  
+        printf("Attente de reception grille du J1\n");      
         if ((longueur = read(p.socketJ1, buffer, sizeof(buffer))) <= 0) 
             return NULL;
         remplirGrilleByString(p.gJ1,buffer);
 
     }
     printf("Reception grille du J1\n");
-    return NULL;
+    return 0;
 }
 
 static void *task_receptionGrilleJ2(void *partie)
@@ -121,14 +129,15 @@ static void *task_receptionGrilleJ2(void *partie)
         p.gJ2 = (*partie2).gJ2;
 
         char buffer[200];
-        int longueur;      
+        int longueur;    
+        printf("Attente de reception grille du J2\n");  
         if ((longueur = read(p.socketJ2, buffer, sizeof(buffer))) <= 0) 
             return NULL;
         remplirGrilleByString(p.gJ2,buffer);
 
     }
     printf("Reception grille du J2\n");
-    return NULL;
+    return 0;
 }
 
 
@@ -164,7 +173,7 @@ static void *task_gestionPartie(void *partie)
         } 
         printf("envoie des grilles au 2 joueurs : ok\n");
         sleep(1);
-        while(1)
+        while(tabPartie[nbPartie].end != 1)
         {
             printf("autorise le joueur 1 à jouer\n");
             printf(" socket : %d \n",tabPartie[nbPartie].socketJ1);
@@ -174,7 +183,7 @@ static void *task_gestionPartie(void *partie)
                 exit(1);
             } 
             printf("attente de l'action du joueur 1\n");
-            receptionCoordonnees(tabPartie[nbPartie],1);
+            tabPartie[nbPartie].end = receptionCoordonnees(tabPartie[nbPartie],1);
 
             printf("autorise le joueur 2 à jouer\n");
             printf(" socket : %d \n",tabPartie[nbPartie].socketJ2);
@@ -184,17 +193,17 @@ static void *task_gestionPartie(void *partie)
                 exit(1);
             } 
             printf("attente de l'action du joueur 2\n");
-            receptionCoordonnees(tabPartie[nbPartie],2);
+            tabPartie[nbPartie].end = receptionCoordonnees(tabPartie[nbPartie],2);
 
             //system("clear");
 
-            //afficherDuoGrille(*(tabPartie[nbPartie].gJ1),*(tabPartie[nbPartie].gJ2));
+            afficherDuoGrille(*(tabPartie[nbPartie].gJ1),*(tabPartie[nbPartie].gJ2));
         } 
-        
+        printf(" fin de la partie numero %d \n",nbPartie);
         close(tabPartie[nbPartie].socketJ1);
         close(tabPartie[nbPartie].socketJ2);
     }
-    return NULL;
+    return 0;
 }
                                   
 int main(int argc, char **argv) 
@@ -305,8 +314,11 @@ int main(int argc, char **argv)
         
         pthread_t t,t2;
         
+        //sleep(1) ici crée un bug !! pourquoi ?? just wtf ....
         envoieSignal(tabPartie[nbPartie].socketJ1);
         envoieSignal(tabPartie[nbPartie].socketJ2);
+
+        printf("signaux envoyés \n");
 
         pthread_create (&t, NULL, task_receptionGrilleJ1, &tabPartie[nbPartie]);
         pthread_create (&t2, NULL, task_receptionGrilleJ2, &tabPartie[nbPartie]);

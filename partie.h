@@ -5,6 +5,8 @@
 #include <stdbool.h> 
 #include "structure.h"
 
+#define NB_NAVIRE 5
+
 typedef struct Partie Partie;
 struct Partie
 {
@@ -12,6 +14,7 @@ struct Partie
 	int socketJ2;
 	Grille *gJ1;
 	Grille *gJ2;
+	int end;
 };
 
 Partie* initPartieP();
@@ -23,5 +26,6 @@ void initialisationDebutPartie(Grille *g);
 void envoieSignal(int sock);
 int receptionSignal(int sock);
 
+
 /*pas Ici*/
-void receptionCoordonnees(Partie p, int joueur);
+int receptionCoordonnees(Partie p, int joueur);

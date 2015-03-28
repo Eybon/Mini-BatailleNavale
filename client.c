@@ -42,18 +42,20 @@ void traitementsignal(int signal)
     exit(1);
 }
 
-void action(int sock, Grille *g)
+void action(int sock, Grille *gAdv, Grille gClient)
 {
     printf("---Choix des coordonnées d'attaque---\n");
     int ph = selectionPositionHorizontale();
     int pv = selectionPositionVerticale();
-    int type = attaquerPosition(g,pv,ph);
+    int type = attaquerPosition(gAdv,pv,ph);
     envoieCoordonnees(sock,ph,pv);
+    system("clear");
+    affichageClient(gClient,*gAdv);
     if((type==BAT1)||(type==BAT2)||(type==BAT3)||(type==BAT4)||(type==BAT5))
     {
         printf(" ------------------------------------------\n");
         printf(" ->  Touché !                             -\n");
-        if(0==rechercheBateau(*g,type))
+        if(0==rechercheBateau(*gAdv,type))
         {
             printf(" -> Vous avez coulé un bateau adverse !   -\n");
         }
@@ -65,7 +67,7 @@ void action(int sock, Grille *g)
         printf(" ->  Raté !                               -\n");
         printf(" ------------------------------------------\n");
     }
-    if(0==rechercheFinDePartie(*g))
+    if(0==rechercheFinDePartie(*gAdv))
     {
         victoire = 1;
         kill(getpid(),SIGQUIT);
@@ -79,6 +81,11 @@ void actionReception(Grille *g)
         victoire = 0;
         kill(getpid(),SIGQUIT);
     }
+    if(-1==rechercheFinDePartie(*g))
+    {
+        victoire = 1;
+        kill(getpid(),SIGQUIT);
+    }    
 }
 
 int main(int argc, char **argv) {
@@ -86,7 +93,7 @@ int main(int argc, char **argv) {
     //traitement des signaux
     signal(SIGQUIT,traitementsignal);//traitement pour Quitter avec END
     signal(SIGINT,traitementsignal);//taitement pour le signal Ctrl-C
-    victoire = -1;
+    victoire = 0;
 
     sockaddr_in adresse_locale; 	/* adresse de socket local */
     hostent *	ptr_host; 		/* info sur une machine hote */
@@ -158,8 +165,9 @@ int main(int argc, char **argv) {
             system("clear");    
             actionReception(&g);
             affichageClient(g,gAdv);
+            //afficherDuoGrille(g,gAdv);
             printf(" --- Votre action --- \n");  
-            action(socket_descriptor,&gAdv);
+            action(socket_descriptor,&gAdv,g);
         }
     }  
     close(socket_descriptor);

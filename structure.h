@@ -43,6 +43,7 @@ Axe selectionAxe();
 void afficherGrille(Grille g);
 void afficherDuoGrille(Grille g, Grille g2);
 void affichageClient(Grille g, Grille g2);
+void gameOverGrille(Grille *g);
 
 
 /*Attention probleme avec les fonctions utilisant des char** */

@@ -7,6 +7,7 @@ Partie* initPartieP()
 	*(p->gJ1) = initGrille();
 	p->gJ2 = (Grille*)malloc(sizeof(Grille));
 	*(p->gJ2) = initGrille();
+    p->end = 0;
 	return p;
 }
 
@@ -17,6 +18,7 @@ Partie initPartie()
     *(p.gJ1) = initGrille();
     p.gJ2 = (Grille*)malloc(sizeof(Grille));
     *(p.gJ2) = initGrille();
+    p.end = 0;
     return p;
 }
 
@@ -87,7 +89,7 @@ void initialisationDebutPartie(Grille *g)
 {
     int i = 5;
     int numBateau = 4; // BAT1=4 , BAT2=5 etc ...
-    for(i=5;i>4;i--)
+    for(i=5;i>5-NB_NAVIRE;i--)
     {   
         bool test = false;
         while(test == false)
@@ -109,3 +111,4 @@ void initialisationDebutPartie(Grille *g)
         numBateau++;
     }  
 }
+

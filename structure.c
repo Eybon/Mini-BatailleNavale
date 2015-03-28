@@ -646,10 +646,12 @@ int rechercheBateau(Grille g,Etat e)
 	return count;
 }
 
+/*retourne le nombre de bateau en vie ou -1 si l'adversaire à abandonner*/
 int rechercheFinDePartie(Grille g)
 {
 	int i,j;
 	int count = 0;
+	int abandon = 0;
 	for(i=0;i<TAILLE;i++)
 	{
 		for(j=0;j<TAILLE;j++)
@@ -673,8 +675,29 @@ int rechercheFinDePartie(Grille g)
 			if(g.matrice[i][j]==BAT5)
 			{
 				count++;
-			}												
+			}	
+			if(g.matrice[i][j]==TOUCHE)	
+			{
+				abandon ++;
+			}										
 		}
 	}
+	if(abandon==(TAILLE*TAILLE))
+	{
+		return -1;
+	}
 	return count;
+}
+
+
+void gameOverGrille(Grille *g)
+{
+    int i,j;
+    for(i = 0;i<TAILLE;i++)
+    {
+    	for(j = 0;j<TAILLE;j++)
+    	{
+    		g->matrice[i][j] = TOUCHE;
+    	}
+    }
 }
